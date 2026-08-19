@@ -1,0 +1,340 @@
+BYTE-EXACT RAW REQUESTS — smuggle_scan
+================================================================
+Every .raw file holds EXACT bytes with Windows CRLF line endings.
+
+GET IT INTO BURP REPEATER — pick one:
+
+A) Notepad++ paste (Windows clipboard preserves CRLF):
+   1. Open the .raw in Notepad++. View > Show Symbol > Show All
+      Characters — every line must end with CR LF.
+   2. Ctrl+A, Ctrl+C. In a Repeater tab (Raw view) select all, paste.
+   3. Repeater menu: UNTICK 'Update Content-Length'.
+   4. Inspector: set HTTP version to HTTP/1.
+   5. Switch editor to Hex; tail must read ... 30 0d 0a 0d 0a.
+
+B) Intercept-and-drop (byte-exact, nothing reaches the target):
+   1. Burp > Proxy > Intercept ON.
+   2. python3 send_raw.py <host> <port> <file.raw> --proxy 127.0.0.1:8080
+   3. Right-click the paused request > Send to Repeater (Ctrl+R).
+   4. Click Drop.  5. Test in Repeater as above.
+
+C) Just see the hang (no Burp):
+   python3 send_raw.py <host> <port> <file.raw>
+
+_detect.raw  = detection probe (expect a hang if the timing signal holds;
+               a hang alone is NOT proof — see below)
+_queue.raw   = SAFE response-queue confirmation; send it, then send one
+               normal request on a NEW connection and look for the 404
+               to the smuggled /sg-* path (THAT is real confirmation).
+================================================================
+
+[001] TE.CL https://academy.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py academy.openai.com 443 001_academy.openai.com_TE.CL_detect.raw
+[002] TE.CL https://academy.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py academy.openai.com 443 002_academy.openai.com_TE.CL_detect.raw
+[003] TE.CL https://ads.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py ads.openai.com 443 003_ads.openai.com_TE.CL_detect.raw
+[004] TE.CL https://ads.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py ads.openai.com 443 004_ads.openai.com_TE.CL_detect.raw
+[005] CL.TE https://alignment.openai.com:443/  (mutation: bare-lf-in-name)
+      python3 send_raw.py alignment.openai.com 443 005_alignment.openai.com_CL.TE_detect.raw
+[006] CL.TE https://alignment.openai.com:443/  (mutation: baseline-valid)
+      python3 send_raw.py alignment.openai.com 443 006_alignment.openai.com_CL.TE_detect.raw
+[007] CL.TE https://alignment.openai.com:443/  (mutation: double-space-value)
+      python3 send_raw.py alignment.openai.com 443 007_alignment.openai.com_CL.TE_detect.raw
+[008] CL.TE https://alignment.openai.com:443/  (mutation: name-lower)
+      python3 send_raw.py alignment.openai.com 443 008_alignment.openai.com_CL.TE_detect.raw
+[009] CL.TE https://alignment.openai.com:443/  (mutation: name-weird-case)
+      python3 send_raw.py alignment.openai.com 443 009_alignment.openai.com_CL.TE_detect.raw
+[010] CL.TE https://alignment.openai.com:443/  (mutation: no-space-after-colon)
+      python3 send_raw.py alignment.openai.com 443 010_alignment.openai.com_CL.TE_detect.raw
+[011] CL.TE https://alignment.openai.com:443/  (mutation: obs-fold-crlf)
+      python3 send_raw.py alignment.openai.com 443 011_alignment.openai.com_CL.TE_detect.raw
+[012] CL.TE https://alignment.openai.com:443/  (mutation: obs-fold-lf)
+      python3 send_raw.py alignment.openai.com 443 012_alignment.openai.com_CL.TE_detect.raw
+[013] CL.TE https://alignment.openai.com:443/  (mutation: tab-after-colon)
+      python3 send_raw.py alignment.openai.com 443 013_alignment.openai.com_CL.TE_detect.raw
+[014] CL.TE https://alignment.openai.com:443/  (mutation: tab-space-value)
+      python3 send_raw.py alignment.openai.com 443 014_alignment.openai.com_CL.TE_detect.raw
+[015] CL.TE https://alignment.openai.com:443/  (mutation: value-capitalized)
+      python3 send_raw.py alignment.openai.com 443 015_alignment.openai.com_CL.TE_detect.raw
+[016] CL.TE https://alignment.openai.com:443/  (mutation: value-trailing-tab)
+      python3 send_raw.py alignment.openai.com 443 016_alignment.openai.com_CL.TE_detect.raw
+[017] CL.TE https://alignment.openai.com:443/  (mutation: value-upper)
+      python3 send_raw.py alignment.openai.com 443 017_alignment.openai.com_CL.TE_detect.raw
+[018] CL.TE https://alignment.openai.com:443/  (mutation: x-then-te)
+      python3 send_raw.py alignment.openai.com 443 018_alignment.openai.com_CL.TE_detect.raw
+[019] TE.CL https://auth.enterpriseservices.openai.com:443/  (mutation: dup-identity-first)
+      python3 send_raw.py auth.enterpriseservices.openai.com 443 019_auth.enterpriseservices.openai.com_TE.CL_detect.raw
+[020] TE.CL https://auth.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py auth.openai.com 443 020_auth.openai.com_TE.CL_detect.raw
+[021] TE.CL https://auth.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py auth.openai.com 443 021_auth.openai.com_TE.CL_detect.raw
+[022] TE.CL https://champions.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py champions.openai.com 443 022_champions.openai.com_TE.CL_detect.raw
+[023] TE.CL https://champions.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py champions.openai.com 443 023_champions.openai.com_TE.CL_detect.raw
+[024] TE.CL https://csat.help.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py csat.help.openai.com 443 024_csat.help.openai.com_TE.CL_detect.raw
+[025] TE.CL https://csat.help.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py csat.help.openai.com 443 025_csat.help.openai.com_TE.CL_detect.raw
+[026] CL.TE https://deploymentsafety.openai.com:443/  (mutation: bare-lf-in-name)
+      python3 send_raw.py deploymentsafety.openai.com 443 026_deploymentsafety.openai.com_CL.TE_detect.raw
+[027] CL.TE https://deploymentsafety.openai.com:443/  (mutation: baseline-valid)
+      python3 send_raw.py deploymentsafety.openai.com 443 027_deploymentsafety.openai.com_CL.TE_detect.raw
+[028] CL.TE https://deploymentsafety.openai.com:443/  (mutation: double-space-value)
+      python3 send_raw.py deploymentsafety.openai.com 443 028_deploymentsafety.openai.com_CL.TE_detect.raw
+[029] CL.TE https://deploymentsafety.openai.com:443/  (mutation: name-lower)
+      python3 send_raw.py deploymentsafety.openai.com 443 029_deploymentsafety.openai.com_CL.TE_detect.raw
+[030] CL.TE https://deploymentsafety.openai.com:443/  (mutation: name-weird-case)
+      python3 send_raw.py deploymentsafety.openai.com 443 030_deploymentsafety.openai.com_CL.TE_detect.raw
+[031] CL.TE https://deploymentsafety.openai.com:443/  (mutation: no-space-after-colon)
+      python3 send_raw.py deploymentsafety.openai.com 443 031_deploymentsafety.openai.com_CL.TE_detect.raw
+[032] CL.TE https://deploymentsafety.openai.com:443/  (mutation: obs-fold-crlf)
+      python3 send_raw.py deploymentsafety.openai.com 443 032_deploymentsafety.openai.com_CL.TE_detect.raw
+[033] CL.TE https://deploymentsafety.openai.com:443/  (mutation: obs-fold-lf)
+      python3 send_raw.py deploymentsafety.openai.com 443 033_deploymentsafety.openai.com_CL.TE_detect.raw
+[034] CL.TE https://deploymentsafety.openai.com:443/  (mutation: tab-after-colon)
+      python3 send_raw.py deploymentsafety.openai.com 443 034_deploymentsafety.openai.com_CL.TE_detect.raw
+[035] CL.TE https://deploymentsafety.openai.com:443/  (mutation: tab-space-value)
+      python3 send_raw.py deploymentsafety.openai.com 443 035_deploymentsafety.openai.com_CL.TE_detect.raw
+[036] CL.TE https://deploymentsafety.openai.com:443/  (mutation: value-capitalized)
+      python3 send_raw.py deploymentsafety.openai.com 443 036_deploymentsafety.openai.com_CL.TE_detect.raw
+[037] CL.TE https://deploymentsafety.openai.com:443/  (mutation: value-trailing-tab)
+      python3 send_raw.py deploymentsafety.openai.com 443 037_deploymentsafety.openai.com_CL.TE_detect.raw
+[038] CL.TE https://deploymentsafety.openai.com:443/  (mutation: value-upper)
+      python3 send_raw.py deploymentsafety.openai.com 443 038_deploymentsafety.openai.com_CL.TE_detect.raw
+[039] CL.TE https://deploymentsafety.openai.com:443/  (mutation: x-then-te)
+      python3 send_raw.py deploymentsafety.openai.com 443 039_deploymentsafety.openai.com_CL.TE_detect.raw
+[040] CL.TE https://devday.openai.com:443/  (mutation: bare-lf-in-name)
+      python3 send_raw.py devday.openai.com 443 040_devday.openai.com_CL.TE_detect.raw
+[041] CL.TE https://devday.openai.com:443/  (mutation: baseline-valid)
+      python3 send_raw.py devday.openai.com 443 041_devday.openai.com_CL.TE_detect.raw
+[042] CL.TE https://devday.openai.com:443/  (mutation: double-space-value)
+      python3 send_raw.py devday.openai.com 443 042_devday.openai.com_CL.TE_detect.raw
+[043] CL.TE https://devday.openai.com:443/  (mutation: name-lower)
+      python3 send_raw.py devday.openai.com 443 043_devday.openai.com_CL.TE_detect.raw
+[044] CL.TE https://devday.openai.com:443/  (mutation: name-weird-case)
+      python3 send_raw.py devday.openai.com 443 044_devday.openai.com_CL.TE_detect.raw
+[045] CL.TE https://devday.openai.com:443/  (mutation: no-space-after-colon)
+      python3 send_raw.py devday.openai.com 443 045_devday.openai.com_CL.TE_detect.raw
+[046] CL.TE https://devday.openai.com:443/  (mutation: obs-fold-crlf)
+      python3 send_raw.py devday.openai.com 443 046_devday.openai.com_CL.TE_detect.raw
+[047] CL.TE https://devday.openai.com:443/  (mutation: obs-fold-lf)
+      python3 send_raw.py devday.openai.com 443 047_devday.openai.com_CL.TE_detect.raw
+[048] CL.TE https://devday.openai.com:443/  (mutation: tab-after-colon)
+      python3 send_raw.py devday.openai.com 443 048_devday.openai.com_CL.TE_detect.raw
+[049] CL.TE https://devday.openai.com:443/  (mutation: tab-space-value)
+      python3 send_raw.py devday.openai.com 443 049_devday.openai.com_CL.TE_detect.raw
+[050] CL.TE https://devday.openai.com:443/  (mutation: value-capitalized)
+      python3 send_raw.py devday.openai.com 443 050_devday.openai.com_CL.TE_detect.raw
+[051] CL.TE https://devday.openai.com:443/  (mutation: value-trailing-tab)
+      python3 send_raw.py devday.openai.com 443 051_devday.openai.com_CL.TE_detect.raw
+[052] CL.TE https://devday.openai.com:443/  (mutation: value-upper)
+      python3 send_raw.py devday.openai.com 443 052_devday.openai.com_CL.TE_detect.raw
+[053] CL.TE https://devday.openai.com:443/  (mutation: x-then-te)
+      python3 send_raw.py devday.openai.com 443 053_devday.openai.com_CL.TE_detect.raw
+[054] CL.TE https://developers.openai.com:443/  (mutation: bare-lf-in-name)
+      python3 send_raw.py developers.openai.com 443 054_developers.openai.com_CL.TE_detect.raw
+[055] CL.TE https://developers.openai.com:443/  (mutation: baseline-valid)
+      python3 send_raw.py developers.openai.com 443 055_developers.openai.com_CL.TE_detect.raw
+[056] CL.TE https://developers.openai.com:443/  (mutation: double-space-value)
+      python3 send_raw.py developers.openai.com 443 056_developers.openai.com_CL.TE_detect.raw
+[057] CL.TE https://developers.openai.com:443/  (mutation: name-lower)
+      python3 send_raw.py developers.openai.com 443 057_developers.openai.com_CL.TE_detect.raw
+[058] CL.TE https://developers.openai.com:443/  (mutation: name-weird-case)
+      python3 send_raw.py developers.openai.com 443 058_developers.openai.com_CL.TE_detect.raw
+[059] CL.TE https://developers.openai.com:443/  (mutation: no-space-after-colon)
+      python3 send_raw.py developers.openai.com 443 059_developers.openai.com_CL.TE_detect.raw
+[060] CL.TE https://developers.openai.com:443/  (mutation: obs-fold-crlf)
+      python3 send_raw.py developers.openai.com 443 060_developers.openai.com_CL.TE_detect.raw
+[061] CL.TE https://developers.openai.com:443/  (mutation: obs-fold-lf)
+      python3 send_raw.py developers.openai.com 443 061_developers.openai.com_CL.TE_detect.raw
+[062] CL.TE https://developers.openai.com:443/  (mutation: tab-after-colon)
+      python3 send_raw.py developers.openai.com 443 062_developers.openai.com_CL.TE_detect.raw
+[063] CL.TE https://developers.openai.com:443/  (mutation: tab-space-value)
+      python3 send_raw.py developers.openai.com 443 063_developers.openai.com_CL.TE_detect.raw
+[064] CL.TE https://developers.openai.com:443/  (mutation: value-capitalized)
+      python3 send_raw.py developers.openai.com 443 064_developers.openai.com_CL.TE_detect.raw
+[065] CL.TE https://developers.openai.com:443/  (mutation: value-trailing-tab)
+      python3 send_raw.py developers.openai.com 443 065_developers.openai.com_CL.TE_detect.raw
+[066] CL.TE https://developers.openai.com:443/  (mutation: value-upper)
+      python3 send_raw.py developers.openai.com 443 066_developers.openai.com_CL.TE_detect.raw
+[067] CL.TE https://developers.openai.com:443/  (mutation: x-then-te)
+      python3 send_raw.py developers.openai.com 443 067_developers.openai.com_CL.TE_detect.raw
+[068] CL.TE https://discord.verify.openai.com:443/  (mutation: bare-lf-in-name)
+      python3 send_raw.py discord.verify.openai.com 443 068_discord.verify.openai.com_CL.TE_detect.raw
+[069] CL.TE https://discord.verify.openai.com:443/  (mutation: baseline-valid)
+      python3 send_raw.py discord.verify.openai.com 443 069_discord.verify.openai.com_CL.TE_detect.raw
+[070] CL.TE https://discord.verify.openai.com:443/  (mutation: double-space-value)
+      python3 send_raw.py discord.verify.openai.com 443 070_discord.verify.openai.com_CL.TE_detect.raw
+[071] CL.TE https://discord.verify.openai.com:443/  (mutation: dup-identity-first)
+      python3 send_raw.py discord.verify.openai.com 443 071_discord.verify.openai.com_CL.TE_detect.raw
+[072] CL.TE https://discord.verify.openai.com:443/  (mutation: dup-te-valid-second)
+      python3 send_raw.py discord.verify.openai.com 443 072_discord.verify.openai.com_CL.TE_detect.raw
+[073] CL.TE https://discord.verify.openai.com:443/  (mutation: name-lower)
+      python3 send_raw.py discord.verify.openai.com 443 073_discord.verify.openai.com_CL.TE_detect.raw
+[074] CL.TE https://discord.verify.openai.com:443/  (mutation: name-weird-case)
+      python3 send_raw.py discord.verify.openai.com 443 074_discord.verify.openai.com_CL.TE_detect.raw
+[075] CL.TE https://discord.verify.openai.com:443/  (mutation: no-space-after-colon)
+      python3 send_raw.py discord.verify.openai.com 443 075_discord.verify.openai.com_CL.TE_detect.raw
+[076] CL.TE https://discord.verify.openai.com:443/  (mutation: tab-after-colon)
+      python3 send_raw.py discord.verify.openai.com 443 076_discord.verify.openai.com_CL.TE_detect.raw
+[077] CL.TE https://discord.verify.openai.com:443/  (mutation: tab-space-value)
+      python3 send_raw.py discord.verify.openai.com 443 077_discord.verify.openai.com_CL.TE_detect.raw
+[078] CL.TE https://discord.verify.openai.com:443/  (mutation: value-capitalized)
+      python3 send_raw.py discord.verify.openai.com 443 078_discord.verify.openai.com_CL.TE_detect.raw
+[079] CL.TE https://discord.verify.openai.com:443/  (mutation: value-trailing-tab)
+      python3 send_raw.py discord.verify.openai.com 443 079_discord.verify.openai.com_CL.TE_detect.raw
+[080] CL.TE https://discord.verify.openai.com:443/  (mutation: value-upper)
+      python3 send_raw.py discord.verify.openai.com 443 080_discord.verify.openai.com_CL.TE_detect.raw
+[081] CL.TE https://discord.verify.openai.com:443/  (mutation: x-then-te)
+      python3 send_raw.py discord.verify.openai.com 443 081_discord.verify.openai.com_CL.TE_detect.raw
+[082] TE.CL https://edunewsletter.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py edunewsletter.openai.com 443 082_edunewsletter.openai.com_TE.CL_detect.raw
+[083] TE.CL https://edunewsletter.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py edunewsletter.openai.com 443 083_edunewsletter.openai.com_TE.CL_detect.raw
+[084] TE.CL https://em.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py em.openai.com 443 084_em.openai.com_TE.CL_detect.raw
+[085] TE.CL https://em.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py em.openai.com 443 085_em.openai.com_TE.CL_detect.raw
+[086] TE.CL https://evals.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py evals.openai.com 443 086_evals.openai.com_TE.CL_detect.raw
+[087] TE.CL https://evals.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py evals.openai.com 443 087_evals.openai.com_TE.CL_detect.raw
+[088] TE.CL https://external.auth.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py external.auth.openai.com 443 088_external.auth.openai.com_TE.CL_detect.raw
+[089] TE.CL https://external.auth.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py external.auth.openai.com 443 089_external.auth.openai.com_TE.CL_detect.raw
+[090] TE.CL https://forum.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py forum.openai.com 443 090_forum.openai.com_TE.CL_detect.raw
+[091] TE.CL https://forum.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py forum.openai.com 443 091_forum.openai.com_TE.CL_detect.raw
+[092] CL.TE https://guardrails.openai.com:443/  (mutation: bare-lf-in-name)
+      python3 send_raw.py guardrails.openai.com 443 092_guardrails.openai.com_CL.TE_detect.raw
+[093] CL.TE https://guardrails.openai.com:443/  (mutation: baseline-valid)
+      python3 send_raw.py guardrails.openai.com 443 093_guardrails.openai.com_CL.TE_detect.raw
+[094] CL.TE https://guardrails.openai.com:443/  (mutation: double-space-value)
+      python3 send_raw.py guardrails.openai.com 443 094_guardrails.openai.com_CL.TE_detect.raw
+[095] CL.TE https://guardrails.openai.com:443/  (mutation: name-lower)
+      python3 send_raw.py guardrails.openai.com 443 095_guardrails.openai.com_CL.TE_detect.raw
+[096] CL.TE https://guardrails.openai.com:443/  (mutation: name-weird-case)
+      python3 send_raw.py guardrails.openai.com 443 096_guardrails.openai.com_CL.TE_detect.raw
+[097] CL.TE https://guardrails.openai.com:443/  (mutation: no-space-after-colon)
+      python3 send_raw.py guardrails.openai.com 443 097_guardrails.openai.com_CL.TE_detect.raw
+[098] CL.TE https://guardrails.openai.com:443/  (mutation: obs-fold-crlf)
+      python3 send_raw.py guardrails.openai.com 443 098_guardrails.openai.com_CL.TE_detect.raw
+[099] CL.TE https://guardrails.openai.com:443/  (mutation: obs-fold-lf)
+      python3 send_raw.py guardrails.openai.com 443 099_guardrails.openai.com_CL.TE_detect.raw
+[100] CL.TE https://guardrails.openai.com:443/  (mutation: tab-after-colon)
+      python3 send_raw.py guardrails.openai.com 443 100_guardrails.openai.com_CL.TE_detect.raw
+[101] CL.TE https://guardrails.openai.com:443/  (mutation: tab-space-value)
+      python3 send_raw.py guardrails.openai.com 443 101_guardrails.openai.com_CL.TE_detect.raw
+[102] CL.TE https://guardrails.openai.com:443/  (mutation: value-capitalized)
+      python3 send_raw.py guardrails.openai.com 443 102_guardrails.openai.com_CL.TE_detect.raw
+[103] CL.TE https://guardrails.openai.com:443/  (mutation: value-trailing-tab)
+      python3 send_raw.py guardrails.openai.com 443 103_guardrails.openai.com_CL.TE_detect.raw
+[104] CL.TE https://guardrails.openai.com:443/  (mutation: value-upper)
+      python3 send_raw.py guardrails.openai.com 443 104_guardrails.openai.com_CL.TE_detect.raw
+[105] CL.TE https://guardrails.openai.com:443/  (mutation: x-then-te)
+      python3 send_raw.py guardrails.openai.com 443 105_guardrails.openai.com_CL.TE_detect.raw
+[106] TE.CL https://platform.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py platform.openai.com 443 106_platform.openai.com_TE.CL_detect.raw
+[107] TE.CL https://platform.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py platform.openai.com 443 107_platform.openai.com_TE.CL_detect.raw
+[108] TE.CL https://prism.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py prism.openai.com 443 108_prism.openai.com_TE.CL_detect.raw
+[109] TE.CL https://prism.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py prism.openai.com 443 109_prism.openai.com_TE.CL_detect.raw
+[110] CL.TE https://progress.openai.com:443/  (mutation: bare-lf-in-name)
+      python3 send_raw.py progress.openai.com 443 110_progress.openai.com_CL.TE_detect.raw
+[111] CL.TE https://progress.openai.com:443/  (mutation: baseline-valid)
+      python3 send_raw.py progress.openai.com 443 111_progress.openai.com_CL.TE_detect.raw
+[112] CL.TE https://progress.openai.com:443/  (mutation: double-space-value)
+      python3 send_raw.py progress.openai.com 443 112_progress.openai.com_CL.TE_detect.raw
+[113] CL.TE https://progress.openai.com:443/  (mutation: name-lower)
+      python3 send_raw.py progress.openai.com 443 113_progress.openai.com_CL.TE_detect.raw
+[114] CL.TE https://progress.openai.com:443/  (mutation: name-weird-case)
+      python3 send_raw.py progress.openai.com 443 114_progress.openai.com_CL.TE_detect.raw
+[115] CL.TE https://progress.openai.com:443/  (mutation: no-space-after-colon)
+      python3 send_raw.py progress.openai.com 443 115_progress.openai.com_CL.TE_detect.raw
+[116] CL.TE https://progress.openai.com:443/  (mutation: obs-fold-crlf)
+      python3 send_raw.py progress.openai.com 443 116_progress.openai.com_CL.TE_detect.raw
+[117] CL.TE https://progress.openai.com:443/  (mutation: obs-fold-lf)
+      python3 send_raw.py progress.openai.com 443 117_progress.openai.com_CL.TE_detect.raw
+[118] CL.TE https://progress.openai.com:443/  (mutation: tab-after-colon)
+      python3 send_raw.py progress.openai.com 443 118_progress.openai.com_CL.TE_detect.raw
+[119] CL.TE https://progress.openai.com:443/  (mutation: tab-space-value)
+      python3 send_raw.py progress.openai.com 443 119_progress.openai.com_CL.TE_detect.raw
+[120] CL.TE https://progress.openai.com:443/  (mutation: value-capitalized)
+      python3 send_raw.py progress.openai.com 443 120_progress.openai.com_CL.TE_detect.raw
+[121] CL.TE https://progress.openai.com:443/  (mutation: value-trailing-tab)
+      python3 send_raw.py progress.openai.com 443 121_progress.openai.com_CL.TE_detect.raw
+[122] CL.TE https://progress.openai.com:443/  (mutation: value-upper)
+      python3 send_raw.py progress.openai.com 443 122_progress.openai.com_CL.TE_detect.raw
+[123] CL.TE https://progress.openai.com:443/  (mutation: x-then-te)
+      python3 send_raw.py progress.openai.com 443 123_progress.openai.com_CL.TE_detect.raw
+[124] CL.TE https://status.openai.com:443/  (mutation: bare-lf-in-name)
+      python3 send_raw.py status.openai.com 443 124_status.openai.com_CL.TE_detect.raw
+[125] CL.TE https://status.openai.com:443/  (mutation: baseline-valid)
+      python3 send_raw.py status.openai.com 443 125_status.openai.com_CL.TE_detect.raw
+[126] CL.TE https://status.openai.com:443/  (mutation: double-space-value)
+      python3 send_raw.py status.openai.com 443 126_status.openai.com_CL.TE_detect.raw
+[127] CL.TE https://status.openai.com:443/  (mutation: name-lower)
+      python3 send_raw.py status.openai.com 443 127_status.openai.com_CL.TE_detect.raw
+[128] CL.TE https://status.openai.com:443/  (mutation: name-weird-case)
+      python3 send_raw.py status.openai.com 443 128_status.openai.com_CL.TE_detect.raw
+[129] CL.TE https://status.openai.com:443/  (mutation: no-space-after-colon)
+      python3 send_raw.py status.openai.com 443 129_status.openai.com_CL.TE_detect.raw
+[130] CL.TE https://status.openai.com:443/  (mutation: obs-fold-crlf)
+      python3 send_raw.py status.openai.com 443 130_status.openai.com_CL.TE_detect.raw
+[131] CL.TE https://status.openai.com:443/  (mutation: obs-fold-lf)
+      python3 send_raw.py status.openai.com 443 131_status.openai.com_CL.TE_detect.raw
+[132] CL.TE https://status.openai.com:443/  (mutation: tab-after-colon)
+      python3 send_raw.py status.openai.com 443 132_status.openai.com_CL.TE_detect.raw
+[133] CL.TE https://status.openai.com:443/  (mutation: tab-space-value)
+      python3 send_raw.py status.openai.com 443 133_status.openai.com_CL.TE_detect.raw
+[134] CL.TE https://status.openai.com:443/  (mutation: value-capitalized)
+      python3 send_raw.py status.openai.com 443 134_status.openai.com_CL.TE_detect.raw
+[135] CL.TE https://status.openai.com:443/  (mutation: value-trailing-tab)
+      python3 send_raw.py status.openai.com 443 135_status.openai.com_CL.TE_detect.raw
+[136] CL.TE https://status.openai.com:443/  (mutation: value-upper)
+      python3 send_raw.py status.openai.com 443 136_status.openai.com_CL.TE_detect.raw
+[137] CL.TE https://status.openai.com:443/  (mutation: x-then-te)
+      python3 send_raw.py status.openai.com 443 137_status.openai.com_CL.TE_detect.raw
+[138] TE.CL https://supply.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py supply.openai.com 443 138_supply.openai.com_TE.CL_detect.raw
+[139] TE.CL https://supply.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py supply.openai.com 443 139_supply.openai.com_TE.CL_detect.raw
+[140] CL.TE https://supplyco.openai.com:443/  (mutation: bare-lf-in-name)
+      python3 send_raw.py supplyco.openai.com 443 140_supplyco.openai.com_CL.TE_detect.raw
+[141] CL.TE https://supplyco.openai.com:443/  (mutation: baseline-valid)
+      python3 send_raw.py supplyco.openai.com 443 141_supplyco.openai.com_CL.TE_detect.raw
+[142] CL.TE https://supplyco.openai.com:443/  (mutation: double-space-value)
+      python3 send_raw.py supplyco.openai.com 443 142_supplyco.openai.com_CL.TE_detect.raw
+[143] CL.TE https://supplyco.openai.com:443/  (mutation: name-lower)
+      python3 send_raw.py supplyco.openai.com 443 143_supplyco.openai.com_CL.TE_detect.raw
+[144] CL.TE https://supplyco.openai.com:443/  (mutation: name-weird-case)
+      python3 send_raw.py supplyco.openai.com 443 144_supplyco.openai.com_CL.TE_detect.raw
+[145] CL.TE https://supplyco.openai.com:443/  (mutation: no-space-after-colon)
+      python3 send_raw.py supplyco.openai.com 443 145_supplyco.openai.com_CL.TE_detect.raw
+[146] CL.TE https://supplyco.openai.com:443/  (mutation: obs-fold-crlf)
+      python3 send_raw.py supplyco.openai.com 443 146_supplyco.openai.com_CL.TE_detect.raw
+[147] CL.TE https://supplyco.openai.com:443/  (mutation: obs-fold-lf)
+      python3 send_raw.py supplyco.openai.com 443 147_supplyco.openai.com_CL.TE_detect.raw
+[148] CL.TE https://supplyco.openai.com:443/  (mutation: tab-after-colon)
+      python3 send_raw.py supplyco.openai.com 443 148_supplyco.openai.com_CL.TE_detect.raw
+[149] CL.TE https://supplyco.openai.com:443/  (mutation: tab-space-value)
+      python3 send_raw.py supplyco.openai.com 443 149_supplyco.openai.com_CL.TE_detect.raw
+[150] CL.TE https://supplyco.openai.com:443/  (mutation: value-capitalized)
+      python3 send_raw.py supplyco.openai.com 443 150_supplyco.openai.com_CL.TE_detect.raw
+[151] CL.TE https://supplyco.openai.com:443/  (mutation: value-trailing-tab)
+      python3 send_raw.py supplyco.openai.com 443 151_supplyco.openai.com_CL.TE_detect.raw
+[152] CL.TE https://supplyco.openai.com:443/  (mutation: value-upper)
+      python3 send_raw.py supplyco.openai.com 443 152_supplyco.openai.com_CL.TE_detect.raw
+[153] CL.TE https://supplyco.openai.com:443/  (mutation: x-then-te)
+      python3 send_raw.py supplyco.openai.com 443 153_supplyco.openai.com_CL.TE_detect.raw
+[154] TE.CL https://trust.openai.com:443/  (mutation: leading-space-name)
+      python3 send_raw.py trust.openai.com 443 154_trust.openai.com_TE.CL_detect.raw
+[155] TE.CL https://trust.openai.com:443/  (mutation: space-before-colon)
+      python3 send_raw.py trust.openai.com 443 155_trust.openai.com_TE.CL_detect.raw
